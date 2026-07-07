@@ -4,6 +4,8 @@ A mobile-first Progressive Web App that controls a Ketron SD90 arranger
 keyboard over **Bluetooth LE MIDI**, mirroring the desktop app's song
 library, registration switching, and word-synced lyrics display.
 
+**Live app:** https://milegjorgjeski-cpu.github.io/ketron-sd90-remote/
+
 ## Folder structure
 
 ```
@@ -90,16 +92,16 @@ time it generates a cert; already installed in this environment.
 > **iOS Safari does not support Web Bluetooth** — on iPhone/iPad you'd need
 > a third-party browser such as [Bluefy](https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055).
 
-### Option C — deploy to GitHub Pages (permanent HTTPS hosting)
+### Option C — GitHub Pages (permanent HTTPS hosting) — already deployed
 
-1. Create a new GitHub repo (or use an existing one) and push the contents
-   of `web_app/` to it — e.g. as the repo root, or under a `docs/` folder.
-2. In the repo, go to **Settings → Pages**, set **Source** to the branch/folder
-   containing `index.html`, and save.
-3. GitHub gives you a URL like `https://<user>.github.io/<repo>/` — open
-   that on your phone. It's HTTPS by default, so Web Bluetooth works with no
-   certificate warnings and no need to keep your PC's server running.
-4. Re-run `export_songs.py` and push whenever the song library changes.
+This app is live at **https://milegjorgjeski-cpu.github.io/ketron-sd90-remote/**
+(repo: [ketron-sd90-remote](https://github.com/milegjorgjeski-cpu/ketron-sd90-remote),
+served from the `master` branch root). Open that URL on your phone — it's
+HTTPS by default, so Web Bluetooth works with no certificate warnings and no
+need to keep your PC's server running.
+
+Re-run `export_songs.py`, then `git add -A && git commit && git push`
+whenever the song library changes.
 
 ## Installing as an app
 
