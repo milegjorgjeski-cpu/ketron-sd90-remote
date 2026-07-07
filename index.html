@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#17171a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SD90 Remote">
+<title>Ketron SD90 Remote</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header class="topbar">
+    <button id="btnConn" class="conn" aria-label="Connect to SD90">
+      <span id="connDot" class="dot"></span>
+      <span id="connLabel">Not connected</span>
+    </button>
+    <div id="topBadge" class="badge" hidden></div>
+    <button id="btnToggleDebug" class="debug-toggle" aria-label="Toggle debug log">&#128027;</button>
+  </header>
+
+  <div id="bleWarning" class="ble-warning">
+    <span>Close the desktop Remote app and MIDIberryM before connecting — WIDI Master allows only one connection at a time.</span>
+    <button id="btnDismissWarning" aria-label="Dismiss">&#10005;</button>
+  </div>
+
+  <div class="main-area">
+  <div id="screensWrap" class="screens-wrap">
+
+  <!-- Now Playing -->
+  <main id="screenNow" class="screen">
+    <div class="song-head">
+      <button id="btnBack" class="back-btn" aria-label="Back to songs">&#8592;</button>
+      <div class="song-head-text">
+        <p id="npTitle" class="song-title">—</p>
+        <p id="npArtist" class="song-artist">—</p>
+      </div>
+    </div>
+
+    <div id="setIndicator" class="set-indicator" hidden>
+      <button id="btnSetPrev" class="set-nav-btn" aria-label="Previous in set">&#8249;</button>
+      <button id="setIndicatorText" class="set-indicator-text" aria-label="View full set song list"></button>
+      <button id="btnSetNext" class="set-nav-btn" aria-label="Next in set">&#8250;</button>
+    </div>
+
+    <div class="lyrics-box">
+      <div id="lyricsEmpty" class="lyrics-empty">No lyrics for this song.</div>
+      <div id="lyricsScroll" class="lyrics-scroll" hidden></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="progress-time"><span id="elapsedLbl">0:00</span><span id="durationLbl">0:00</span></div>
+    </div>
+
+    <div class="transport">
+      <button id="btnPlay" class="btn-transport btn-stop">&#9632; Stop</button>
+      <button id="btnLyrics" class="btn-transport btn-lyrics">&#9776; Lyrics</button>
+    </div>
+  </main>
+
+  <!-- Songs -->
+  <main id="screenSongs" class="screen active">
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input id="searchInput" class="search-input" type="search" placeholder="Search title or artist" autocomplete="off">
+    </div>
+    <div id="bankFilters" class="filters"></div>
+    <div id="songCount" class="song-count"></div>
+    <ul id="songList" class="song-list"></ul>
+  </main>
+
+  <!-- Sets -->
+  <main id="screenSets" class="screen">
+    <div id="setsListView" class="sets-view">
+      <div id="setsList" class="sets-list"></div>
+    </div>
+
+    <div id="setEditorView" class="sets-view" hidden>
+      <div class="song-head">
+        <button id="btnSetEditorBack" class="back-btn" aria-label="Back to sets">&#8592;</button>
+        <div class="song-head-text">
+          <input id="setNameInput" class="set-name-input" type="text" placeholder="Set name" autocomplete="off" maxlength="60">
+        </div>
+      </div>
+
+      <div class="set-editor-body">
+        <div class="set-editor-card">
+          <p class="set-editor-label">Song order (<span id="setSongCount">0</span>)</p>
+          <ul id="setOrderList" class="set-order-list"></ul>
+        </div>
+
+        <div class="set-editor-card">
+          <p class="set-editor-label">Add songs</p>
+          <div class="search-wrap">
+            <span class="search-icon">&#128269;</span>
+            <input id="setSearchInput" class="search-input" type="search" placeholder="Search title or artist" autocomplete="off">
+          </div>
+          <div id="setBankFilters" class="filters"></div>
+          <ul id="setPickerList" class="song-list set-picker-list"></ul>
+        </div>
+      </div>
+
+      <div class="set-editor-actions">
+        <button id="btnDeleteSet" class="btn-transport btn-set-delete">Delete</button>
+        <button id="btnSaveSet" class="btn-transport btn-set-save">Save</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- More -->
+  <main id="screenMore" class="screen">
+    <div class="sets-list">
+      <div class="set-card" id="btnRegUp"><p class="set-name">&#8593; Reg up</p></div>
+      <div class="set-card" id="btnRegDown"><p class="set-name">&#8595; Reg down</p></div>
+      <div class="set-card" id="btnEnter"><p class="set-name">&#9166; Enter</p></div>
+      <div class="set-card" id="btnExit"><p class="set-name">&#10005; Exit</p></div>
+      <div class="set-card" id="btnXfade"><p class="set-name">XFADE</p></div>
+      <div class="set-card" id="btnAutoNext">
+        <p class="set-name">Auto Next</p>
+        <span class="toggle-switch"><span class="toggle-knob"></span></span>
+      </div>
+      <div class="set-card" id="btnSync"><p class="set-name">&#8635; Sync songs</p></div>
+      <div class="set-card"><p class="set-name">Device: <span id="deviceName">none</span></p></div>
+    </div>
+  </main>
+
+  </div>
+
+  <div id="setPlayingView" class="set-playing-overlay">
+    <div class="song-head">
+      <button id="btnSetPlayingBack" class="back-btn" aria-label="Back">&#8592;</button>
+      <div class="song-head-text">
+        <p id="setPlayingName" class="song-title">—</p>
+        <p class="song-artist">Set song list</p>
+      </div>
+      <div class="set-playing-actions">
+        <button id="btnSetPlayingAllSets" class="set-playing-action-btn secondary" aria-label="All sets">All sets</button>
+        <button id="btnSetPlayFromStart" class="set-playing-action-btn" aria-label="Play from start">&#9654; Start</button>
+        <button id="btnSetPlayingEdit" class="set-playing-action-btn secondary" aria-label="Edit set">&#9998; Edit</button>
+      </div>
+    </div>
+    <div id="setPlayingCount" class="song-count"></div>
+    <ul id="setPlayingList" class="song-list"></ul>
+  </div>
+
+  </div>
+
+  <nav class="bottomnav">
+    <button class="nav-item" data-screen="now"><div class="nav-icon">&#9834;</div><div>Now playing</div></button>
+    <button class="nav-item active" data-screen="songs"><div class="nav-icon">&#9776;</div><div>Songs</div></button>
+    <button class="nav-item" data-screen="sets"><div class="nav-icon">&#9638;</div><div>Sets</div></button>
+    <button class="nav-item" data-screen="more"><div class="nav-icon">&#8943;</div><div>More</div></button>
+  </nav>
+
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<div id="debugPanel" class="debug-panel">
+  <div class="debug-header">
+    <span>Debug log</span>
+    <button id="btnClearDebug">Clear</button>
+    <button id="btnCloseDebug">&#10005;</button>
+  </div>
+  <pre id="debugLog" class="debug-log"></pre>
+</div>
+
+<script src="js/ble.js"></script>
+<script src="js/lyrics.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

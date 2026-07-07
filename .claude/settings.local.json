@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python -c \"from PIL import Image; im = Image.open\\('icons/app_icon.ico'\\); print\\(im.info.get\\('sizes'\\)\\); print\\(im.size\\)\")"
+    ]
+  }
+}
