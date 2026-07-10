@@ -650,6 +650,40 @@
     );
   }
 
+  // Sums duration_ms across a set's entries via the same resolveSetSong
+  // lookup used for playback. Songs with missing/zero duration count as 0
+  // toward the total, but flip `missing` so callers can mark the total as a
+  // lower bound (e.g. "~34:12").
+  function computeSetDuration(entries) {
+    let totalMs = 0;
+    let missing = false;
+    for (const entry of entries) {
+      const song = resolveSetSong(entry);
+      const ms = song && Number(song.duration_ms);
+      if (ms) totalMs += ms;
+      else missing = true;
+    }
+    return { totalMs, missing };
+  }
+
+  function formatDuration(ms) {
+    const totalSec = Math.round(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    const mm = h > 0 ? String(m).padStart(2, "0") : String(m);
+    const ss = String(s).padStart(2, "0");
+    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
+  // Builds the "· mm:ss" (or "· ~mm:ss") suffix for a song-count label.
+  // Returns "" for an empty set so callers can omit the separator entirely.
+  function setDurationSuffix(entries) {
+    if (!entries.length) return "";
+    const { totalMs, missing } = computeSetDuration(entries);
+    return ` · ${missing ? "~" : ""}${formatDuration(totalMs)}`;
+  }
+
   function updateSetIndicator() {
     if (!activeSet || !activeSet.songs.length) {
       els.setIndicator.hidden = true;
@@ -739,7 +773,8 @@
   function renderSetPlayingList() {
     els.setPlayingName.textContent = viewingSet.name || "Untitled set";
     els.setPlayingCount.textContent =
-      `${viewingSet.songs.length} song${viewingSet.songs.length === 1 ? "" : "s"}`;
+      `${viewingSet.songs.length} song${viewingSet.songs.length === 1 ? "" : "s"}` +
+      setDurationSuffix(viewingSet.songs);
     els.setPlayingList.innerHTML = "";
     const frag = document.createDocumentFragment();
     viewingSet.songs.forEach((entry, idx) => frag.appendChild(makeSetPlayingRow(entry, idx)));
@@ -836,7 +871,8 @@
     name.textContent = set.name || "Untitled set";
     const meta = document.createElement("p");
     meta.className = "set-meta";
-    meta.textContent = `${set.songs.length} song${set.songs.length === 1 ? "" : "s"}`;
+    meta.textContent =
+      `${set.songs.length} song${set.songs.length === 1 ? "" : "s"}` + setDurationSuffix(set.songs);
     main.append(name, meta);
 
     const editBtn = document.createElement("button");
@@ -938,7 +974,9 @@
   let pointerDrag = null;
 
   function renderSetOrderList() {
-    els.setSongCount.textContent = String(editingSet.songs.length);
+    els.setSongCount.textContent =
+      `${editingSet.songs.length} song${editingSet.songs.length === 1 ? "" : "s"}` +
+      setDurationSuffix(editingSet.songs);
     els.setOrderList.innerHTML = "";
     if (!editingSet.songs.length) {
       const li = document.createElement("li");
@@ -1179,6 +1217,13 @@
   renderSetsList();
   try {
     await loadSongs();
+    // renderSetsList() above ran before songs.json resolved, so set cards
+    // computed duration (and resolved titles) against an empty songs array.
+    // Re-render whichever set view is currently visible now that songs are
+    // available — otherwise durations stay stuck showing "~0:00".
+    if (!els.setsListView.hidden) renderSetsList();
+    if (!els.setEditorView.hidden) renderSetOrderList();
+    if (els.setPlayingView.classList.contains("visible")) renderSetPlayingList();
   } catch (err) {
     showToast("Failed to load songs.json", true);
   }
