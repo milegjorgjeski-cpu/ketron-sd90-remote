@@ -13,6 +13,14 @@
 const SYNC_OFFSET_MIDI_MS = 282;  // ms app delays lyrics for MIDI/KAR songs
 const SYNC_OFFSET_MP3_MS = 1400;  // ms app delays lyrics for MP3/WAV songs
 
+// Installed Android APK (Trusted Web Activity) launches start lyrics
+// noticeably earlier than the module compared to a regular browser tab.
+// android-app:// is only set as document.referrer by a TWA launch, never
+// by a normal browser tab (desktop or mobile), so this is a reliable check.
+const TWA_EXTRA_OFFSET_MS = 3000;
+const IS_TWA = document.referrer.startsWith("android-app://");
+let twaOffsetLogged = false;
+
 function isSyllableMode(lyrics) {
   if (!lyrics.length) return false;
   const avgLen = lyrics.reduce((sum, l) => sum + l.text.length, 0) / lyrics.length;
@@ -145,7 +153,20 @@ class LyricsPlayer {
   }
 
   _currentSyncOffsetMs() {
-    return this._songSyncType() === "midi" ? SYNC_OFFSET_MIDI_MS : SYNC_OFFSET_MP3_MS;
+    // Base offset (MIDI/MP3), plus the TWA adjustment as a stacked addend —
+    // any future user fine-tuning offset should stack on top of this too,
+    // not replace it.
+    let offsetMs = this._songSyncType() === "midi" ? SYNC_OFFSET_MIDI_MS : SYNC_OFFSET_MP3_MS;
+    if (IS_TWA) {
+      offsetMs += TWA_EXTRA_OFFSET_MS;
+      if (!twaOffsetLogged) {
+        twaOffsetLogged = true;
+        if (typeof uiLog === "function") {
+          uiLog(`[SYNC] TWA detected, +${TWA_EXTRA_OFFSET_MS}ms lyrics offset applied`);
+        }
+      }
+    }
+    return offsetMs;
   }
 
   startTimer() {
