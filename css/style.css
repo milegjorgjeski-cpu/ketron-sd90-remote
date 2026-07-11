@@ -198,6 +198,15 @@ body {
 .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .3s linear; }
 .progress-time { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--dim); }
 
+.sync-offset-wrap { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+.sync-offset-label { flex: 1; text-align: center; font-size: 11px; color: var(--dim); }
+.sync-offset-btn {
+  width: 36px; height: 26px; border-radius: 8px; background: var(--card);
+  border: 0.5px solid var(--border); color: var(--text); font-size: 12px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+.sync-offset-btn:active { background: rgba(90, 140, 220, 0.14); }
+
 .transport { display: flex; gap: 8px; padding: 0 18px calc(18px + var(--safe-bottom)); flex-shrink: 0; }
 .btn-transport {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;

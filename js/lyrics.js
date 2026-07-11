@@ -21,6 +21,12 @@ const TWA_EXTRA_OFFSET_MS = 3000;
 const IS_TWA = document.referrer.startsWith("android-app://");
 let twaOffsetLogged = false;
 
+// Per-song-type (MIDI vs MP3) manual offset override, live-tuned via the
+// +/- controls in Now Playing. Once a type has been tuned at least once,
+// its stored value fully replaces that type's base (+TWA) offset — the
+// user is dialing in the real correct number by ear, so we stop guessing.
+const SYNC_OFFSET_STORAGE_KEYS = { midi: "sd90.syncOffset.midi", mp3: "sd90.syncOffset.mp3" };
+
 function isSyllableMode(lyrics) {
   if (!lyrics.length) return false;
   const avgLen = lyrics.reduce((sum, l) => sum + l.text.length, 0) / lyrics.length;
@@ -152,21 +158,55 @@ class LyricsPlayer {
     return ext === "mid" || ext === "kar" ? "midi" : "mp3";
   }
 
+  _defaultSyncOffsetMs(type) {
+    let offsetMs = type === "midi" ? SYNC_OFFSET_MIDI_MS : SYNC_OFFSET_MP3_MS;
+    if (IS_TWA) offsetMs += TWA_EXTRA_OFFSET_MS;
+    return offsetMs;
+  }
+
+  _manualSyncOffsetMs(type) {
+    const raw = localStorage.getItem(SYNC_OFFSET_STORAGE_KEYS[type]);
+    if (raw === null) return null;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  // Read live on every tick, so adjustSyncOffset() takes effect on the
+  // currently-playing song immediately — no timer restart required.
   _currentSyncOffsetMs() {
-    // Base offset (MIDI/MP3), plus the TWA adjustment as a stacked addend —
-    // any future user fine-tuning offset should stack on top of this too,
-    // not replace it.
-    let offsetMs = this._songSyncType() === "midi" ? SYNC_OFFSET_MIDI_MS : SYNC_OFFSET_MP3_MS;
-    if (IS_TWA) {
-      offsetMs += TWA_EXTRA_OFFSET_MS;
-      if (!twaOffsetLogged) {
-        twaOffsetLogged = true;
-        if (typeof uiLog === "function") {
-          uiLog(`[SYNC] TWA detected, +${TWA_EXTRA_OFFSET_MS}ms lyrics offset applied`);
-        }
+    const type = this._songSyncType();
+    const manual = this._manualSyncOffsetMs(type);
+    if (manual !== null) return manual;
+    if (IS_TWA && !twaOffsetLogged) {
+      twaOffsetLogged = true;
+      if (typeof uiLog === "function") {
+        uiLog(`[SYNC] TWA detected, +${TWA_EXTRA_OFFSET_MS}ms lyrics offset applied`);
       }
     }
-    return offsetMs;
+    return this._defaultSyncOffsetMs(type);
+  }
+
+  // Nudges the live offset for the current song's type by deltaMs and
+  // persists it as that type's new default going forward, replacing the
+  // static base (+TWA) value entirely.
+  adjustSyncOffset(deltaMs) {
+    const type = this._songSyncType();
+    const current = this._manualSyncOffsetMs(type);
+    const base = current !== null ? current : this._defaultSyncOffsetMs(type);
+    localStorage.setItem(SYNC_OFFSET_STORAGE_KEYS[type], String(base + deltaMs));
+    return this.getSyncOffsetInfo();
+  }
+
+  getSyncOffsetInfo() {
+    const type = this._songSyncType();
+    const manual = this._manualSyncOffsetMs(type);
+    return {
+      type,
+      isManual: manual !== null,
+      effectiveMs: manual !== null ? manual : this._defaultSyncOffsetMs(type),
+      baseMs: type === "midi" ? SYNC_OFFSET_MIDI_MS : SYNC_OFFSET_MP3_MS,
+      twaMs: IS_TWA ? TWA_EXTRA_OFFSET_MS : 0,
+    };
   }
 
   startTimer() {

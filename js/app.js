@@ -31,6 +31,9 @@
     progressFill: document.getElementById("progressFill"),
     elapsedLbl: document.getElementById("elapsedLbl"),
     durationLbl: document.getElementById("durationLbl"),
+    syncOffsetLabel: document.getElementById("syncOffsetLabel"),
+    btnSyncOffsetDown: document.getElementById("btnSyncOffsetDown"),
+    btnSyncOffsetUp: document.getElementById("btnSyncOffsetUp"),
     btnPlay: document.getElementById("btnPlay"),
     btnLyrics: document.getElementById("btnLyrics"),
 
@@ -519,6 +522,7 @@
     updateActiveSongHighlight({ scroll: scrollToSong });
     stopPlayback(false);
     player.loadSong(song);
+    updateSyncOffsetLabel();
 
     els.npTitle.textContent = song.title || "Untitled";
     els.npArtist.textContent = song.artist || "Unknown artist";
@@ -597,6 +601,30 @@
       els.btnAutoNext.classList.toggle("is-on", enabled);
     });
   }
+
+  // ── Live lyrics sync offset (per song-type, tuned by ear during playback) ─
+  function updateSyncOffsetLabel() {
+    if (!els.syncOffsetLabel) return;
+    const info = player.getSyncOffsetInfo();
+    if (info.isManual) {
+      els.syncOffsetLabel.textContent = `Lyrics sync: ${info.effectiveMs}ms (tuned)`;
+    } else if (info.twaMs) {
+      els.syncOffsetLabel.textContent = `Lyrics sync: ${info.baseMs}ms + ${info.twaMs}ms TWA = ${info.effectiveMs}ms`;
+    } else {
+      els.syncOffsetLabel.textContent = `Lyrics sync: ${info.effectiveMs}ms`;
+    }
+  }
+  if (els.btnSyncOffsetDown && els.btnSyncOffsetUp) {
+    els.btnSyncOffsetDown.addEventListener("click", () => {
+      player.adjustSyncOffset(-50);
+      updateSyncOffsetLabel();
+    });
+    els.btnSyncOffsetUp.addEventListener("click", () => {
+      player.adjustSyncOffset(50);
+      updateSyncOffsetLabel();
+    });
+  }
+  updateSyncOffsetLabel();
 
   player.onAutoNext = () => {
     // Set-aware: if a set is currently loaded as the queue, Auto Next walks
