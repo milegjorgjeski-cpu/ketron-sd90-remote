@@ -101,6 +101,7 @@
 
   // ── Sets (playlists) ────────────────────────────────────────────────────
   const SETS_KEY = "sd90.sets";
+  const MS_IMPORTED_KEY = "sd90.mobilesheetsImported"; // one-time import flag, see importMobileSheetsSets()
   let sets = [];
   let activeSet = null; // { id, name, songs } — the set currently loaded as the queue
   let activeSetIndex = -1; // index of the current song within activeSet.songs
@@ -886,6 +887,38 @@
     newCard.innerHTML = `<p class="set-name">&#43; New set</p>`;
     newCard.addEventListener("click", () => openSetEditor(null));
     els.setsList.appendChild(newCard);
+
+    // TEMPORARY: one-time button to import the MobileSheets-derived set
+    // lists (see mobilesheets_setlists_import.json). Hides itself via
+    // MS_IMPORTED_KEY once used - safe to delete this block afterward.
+    if (!localStorage.getItem(MS_IMPORTED_KEY)) {
+      const importCard = document.createElement("div");
+      importCard.className = "set-card set-card-new";
+      importCard.innerHTML = `<p class="set-name">&#8615; Import MobileSheets sets</p>`;
+      importCard.addEventListener("click", importMobileSheetsSets);
+      els.setsList.appendChild(importCard);
+    }
+  }
+
+  async function importMobileSheetsSets() {
+    try {
+      const res = await fetch("mobilesheets_setlists_import.json");
+      if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+      const incoming = await res.json();
+      const existingNames = new Set(sets.map((s) => s.name));
+      let added = 0;
+      incoming.forEach((s, i) => {
+        if (existingNames.has(s.name)) return;
+        sets.push({ id: `ms-import-${Date.now()}-${i}`, name: s.name, songs: s.songs });
+        added += 1;
+      });
+      persistSets();
+      localStorage.setItem(MS_IMPORTED_KEY, "1");
+      renderSetsList();
+      showToast(`Imported ${added} set list${added === 1 ? "" : "s"} from MobileSheets`);
+    } catch (err) {
+      showToast("Could not load mobilesheets_setlists_import.json", true);
+    }
   }
 
   function makeSetCard(set) {
