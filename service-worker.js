@@ -1,4 +1,4 @@
-const CACHE_NAME = "sd90-remote-v7";
+const CACHE_NAME = "sd90-remote-v8";
 const APP_SHELL = [
   "./",
   "./index.html",

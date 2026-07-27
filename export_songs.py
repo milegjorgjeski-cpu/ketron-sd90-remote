@@ -4,7 +4,9 @@ Scans the Ketron SD90 Remote songs/ library and builds a single compact
 songs.json for the web_app PWA.
 
 Each song entry: title, artist, reg_number, bank, mp3_path, duration_ms,
-lyrics, lyric_format ("syllable" | "synced-word" | "midi" | null).
+lyrics, lyric_format ("syllable" | "synced-word" | "midi" | null),
+auto_next_offset_ms (per-song Auto Next lead time in ms, or null to use
+the web app's default — mirrors song_library.py's Song.auto_next_offset_ms).
 
 lyric_format classification mirrors song_library.py's syllable_mode
 detection (avg text length < 8 chars) plus main.py's
@@ -90,6 +92,7 @@ def load_song(folder_path: str, folder_name: str) -> dict | None:
         "duration_ms": info.get("duration_ms", 0),
         "lyrics": lyrics,
         "lyric_format": classify_lyric_format(lyrics),
+        "auto_next_offset_ms": info.get("auto_next_offset_ms"),
     }
 
 

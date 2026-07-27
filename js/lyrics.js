@@ -13,6 +13,11 @@
 const SYNC_OFFSET_MIDI_MS = 282;  // ms app delays lyrics for MIDI/KAR songs
 const SYNC_OFFSET_MP3_MS = 1400;  // ms app delays lyrics for MP3/WAV songs
 
+// Lead time before a song's end at which Auto Next fires, used when a song
+// has no auto_next_offset_ms override in its songs.json entry. Mirrors
+// song_library.py's AUTO_NEXT_DEFAULT_OFFSET_MS.
+const AUTO_NEXT_DEFAULT_OFFSET_MS = 2000;
+
 // Installed Android APK (Trusted Web Activity) launches start lyrics
 // noticeably earlier than the module compared to a regular browser tab.
 // android-app:// is only set as document.referrer by a TWA launch, never
@@ -132,7 +137,7 @@ class LyricsPlayer {
 
     this.autoNext = false; // toggled via setAutoNext(); persisted in app.js
     this.autoNextTriggered = false; // guards against re-triggering mid-song
-    this.onAutoNext = null; // () => void — called once, 2000ms before track end
+    this.onAutoNext = null; // () => void — called once, auto_next_offset_ms before track end
   }
 
   setAutoNext(enabled) {
@@ -252,13 +257,15 @@ class LyricsPlayer {
 
     if (this.lyricsVisible) this._renderAnimated(elapsedMs);
 
-    // Port of main.py's _tick() Auto Next trigger: fires once, 2000ms before
-    // the track ends, using raw (non-offset-adjusted) elapsed time against
-    // duration_ms minus the sync offset — same formula as desktop.
+    // Port of main.py's _tick() Auto Next trigger: fires once, auto_next_offset_ms
+    // before the track ends (per-song override, else AUTO_NEXT_DEFAULT_OFFSET_MS),
+    // using raw (non-offset-adjusted) elapsed time against duration_ms minus the
+    // sync offset — same formula as desktop.
     if (this.autoNext && !this.autoNextTriggered && this.song && this.song.duration_ms) {
       const elapsed = performance.now() - this.syncStartTime;
       const remaining = this.song.duration_ms - elapsed - this._currentSyncOffsetMs();
-      if (remaining <= 2000) {
+      const autoNextOffsetMs = this.song.auto_next_offset_ms ?? AUTO_NEXT_DEFAULT_OFFSET_MS;
+      if (remaining <= autoNextOffsetMs) {
         this.autoNextTriggered = true;
         this.resetTimer();
         if (this.onAutoNext) this.onAutoNext();
