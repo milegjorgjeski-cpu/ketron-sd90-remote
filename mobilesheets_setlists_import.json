@@ -1242,5 +1242,223 @@
         "bank": 1
       }
     ]
+  },
+  {
+    "id": "f603708a-c2a3-4abc-aecc-ff8f87bbc6a5",
+    "name": "6-8 (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 374,
+        "bank": 1
+      },
+      {
+        "reg_number": 438,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "2e316718-9631-4108-b3cb-29eff7d81266",
+    "name": "9/8 (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 199,
+        "bank": 1
+      },
+      {
+        "reg_number": 233,
+        "bank": 1
+      },
+      {
+        "reg_number": 277,
+        "bank": 1
+      },
+      {
+        "reg_number": 359,
+        "bank": 1
+      },
+      {
+        "reg_number": 477,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "c07f6b6e-3133-4a6b-bc98-bae4f7d8b603",
+    "name": "ARABIJA (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 356,
+        "bank": 1
+      },
+      {
+        "reg_number": 517,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "2662a1a3-84e7-4392-9a5b-7ed225ec91e0",
+    "name": "BOSSA BEAT (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 99,
+        "bank": 1
+      },
+      {
+        "reg_number": 115,
+        "bank": 1
+      },
+      {
+        "reg_number": 430,
+        "bank": 1
+      },
+      {
+        "reg_number": 490,
+        "bank": 1
+      },
+      {
+        "reg_number": 565,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "c8c58037-5099-46f6-98be-601deef4d565",
+    "name": "COUNTRY (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 244,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "10d49688-2262-4e19-80a7-a143bcab0118",
+    "name": "DISKO BEAT (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 170,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "9fbf89b0-6e53-4288-90fb-849d2ecdf92b",
+    "name": "DISKO ROCK (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 312,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "789bbb7b-ccfe-4c61-a592-fdacd786fc47",
+    "name": "KODA (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 39,
+        "bank": 1
+      },
+      {
+        "reg_number": 157,
+        "bank": 1
+      },
+      {
+        "reg_number": 341,
+        "bank": 1
+      },
+      {
+        "reg_number": 356,
+        "bank": 1
+      },
+      {
+        "reg_number": 517,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "83ba4a4f-853a-4184-afa1-80dc0ee2ba08",
+    "name": "ORIENTAL (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 356,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "6e0ffca4-d1a4-4e91-a1c0-59c30cf765f4",
+    "name": "RUBATO (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 101,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "03ff3b75-77f5-4066-8c86-b39ab5301361",
+    "name": "RUMBA (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 136,
+        "bank": 1
+      },
+      {
+        "reg_number": 238,
+        "bank": 1
+      },
+      {
+        "reg_number": 401,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "0e8d3c28-f189-4f8a-8cc9-1a13bbe8f33f",
+    "name": "SKA (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 244,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "6918f218-0058-4759-a066-36b302cf1377",
+    "name": "STRANSKI (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 276,
+        "bank": 1
+      },
+      {
+        "reg_number": 317,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "70ce1dd7-e29a-47c1-af86-55d6c7df9e78",
+    "name": "VAHDE (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 178,
+        "bank": 1
+      }
+    ]
+  },
+  {
+    "id": "27603db8-2000-407a-adc8-fca05f998e77",
+    "name": "VALCER (MobileSheets genre)",
+    "songs": [
+      {
+        "reg_number": 34,
+        "bank": 1
+      }
+    ]
   }
 ]
