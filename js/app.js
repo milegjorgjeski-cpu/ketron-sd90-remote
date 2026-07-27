@@ -101,8 +101,10 @@
 
   // ── Sets (playlists) ────────────────────────────────────────────────────
   const SETS_KEY = "sd90.sets";
-  const MS_IMPORTED_KEY = "sd90.mobilesheetsImported"; // one-time import flag, see importMobileSheetsSets()
+  const MS_IMPORTED_KEY = "sd90.mobilesheetsImported"; // legacy one-time import flag, kept only for migration below
+  const MS_IMPORTED_IDS_KEY = "sd90.mobilesheetsImportedIds"; // JSON array of already-imported entry ids/names
   let sets = [];
+  let msPendingImports = null; // null = not checked yet this session; [] once checked and nothing new
   let activeSet = null; // { id, name, songs } — the set currently loaded as the queue
   let activeSetIndex = -1; // index of the current song within activeSet.songs
   let viewingSet = null; // set currently shown in the browse/song-list overlay — may differ from activeSet
@@ -673,6 +675,54 @@
     localStorage.setItem(SETS_KEY, JSON.stringify(sets));
   }
 
+  // ── MobileSheets set list import (see mobilesheets_setlists_import.json) ──
+  // Tracks *which* entries have been imported (by stable id, falling back to
+  // name for entries without one) so newly-added entries in the import file
+  // are detected and offered on a later visit, instead of a single one-time
+  // flag that permanently hides the import card after the first use.
+  function msEntryKey(entry) {
+    return entry.id || entry.name;
+  }
+
+  function getImportedMsIds() {
+    try {
+      const raw = localStorage.getItem(MS_IMPORTED_IDS_KEY);
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch (err) {
+      return new Set();
+    }
+  }
+
+  function saveImportedMsIds(idSet) {
+    localStorage.setItem(MS_IMPORTED_IDS_KEY, JSON.stringify([...idSet]));
+  }
+
+  async function refreshMsImportPending() {
+    try {
+      const res = await fetch("mobilesheets_setlists_import.json");
+      if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+      const incoming = await res.json();
+
+      const importedIds = getImportedMsIds();
+
+      // One-time migration from the old one-shot boolean flag: entries whose
+      // name already matches an existing set were imported under the old
+      // logic, so mark them imported under the new per-id tracking too.
+      if (!localStorage.getItem(MS_IMPORTED_IDS_KEY) && localStorage.getItem(MS_IMPORTED_KEY)) {
+        const existingNames = new Set(sets.map((s) => s.name));
+        incoming.forEach((entry) => {
+          if (existingNames.has(entry.name)) importedIds.add(msEntryKey(entry));
+        });
+        saveImportedMsIds(importedIds);
+      }
+
+      msPendingImports = incoming.filter((entry) => !importedIds.has(msEntryKey(entry)));
+    } catch (err) {
+      msPendingImports = []; // fetch failed / file missing — don't show a broken card
+    }
+    if (!els.setsListView.hidden) renderSetsList();
+  }
+
   function resolveSetSong(entry) {
     return songs.find((s) =>
       Number(s.reg_number) === Number(entry.reg_number) && Number(s.bank) === Number(entry.bank)
@@ -888,37 +938,39 @@
     newCard.addEventListener("click", () => openSetEditor(null));
     els.setsList.appendChild(newCard);
 
-    // TEMPORARY: one-time button to import the MobileSheets-derived set
-    // lists (see mobilesheets_setlists_import.json). Hides itself via
-    // MS_IMPORTED_KEY once used - safe to delete this block afterward.
-    if (!localStorage.getItem(MS_IMPORTED_KEY)) {
+    // Button to import any not-yet-imported MobileSheets-derived set lists
+    // (see mobilesheets_setlists_import.json). Only appears when there are
+    // new entries; re-checked each time this screen is shown so entries
+    // added to the import file later get picked up automatically.
+    if (msPendingImports === null) {
+      refreshMsImportPending(); // async; re-renders this list once resolved
+    } else if (msPendingImports.length) {
       const importCard = document.createElement("div");
       importCard.className = "set-card set-card-new";
-      importCard.innerHTML = `<p class="set-name">&#8615; Import MobileSheets sets</p>`;
+      const n = msPendingImports.length;
+      importCard.innerHTML = `<p class="set-name">&#8615; Import ${n} new MobileSheets set${n === 1 ? "" : "s"}</p>`;
       importCard.addEventListener("click", importMobileSheetsSets);
       els.setsList.appendChild(importCard);
     }
   }
 
   async function importMobileSheetsSets() {
-    try {
-      const res = await fetch("mobilesheets_setlists_import.json");
-      if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-      const incoming = await res.json();
-      const existingNames = new Set(sets.map((s) => s.name));
-      let added = 0;
-      incoming.forEach((s, i) => {
-        if (existingNames.has(s.name)) return;
-        sets.push({ id: `ms-import-${Date.now()}-${i}`, name: s.name, songs: s.songs });
-        added += 1;
-      });
-      persistSets();
-      localStorage.setItem(MS_IMPORTED_KEY, "1");
-      renderSetsList();
-      showToast(`Imported ${added} set list${added === 1 ? "" : "s"} from MobileSheets`);
-    } catch (err) {
-      showToast("Could not load mobilesheets_setlists_import.json", true);
-    }
+    if (!msPendingImports || !msPendingImports.length) return;
+    const toImport = msPendingImports;
+    const importedIds = getImportedMsIds();
+    const existingNames = new Set(sets.map((s) => s.name));
+    let added = 0;
+    toImport.forEach((entry, i) => {
+      importedIds.add(msEntryKey(entry));
+      if (existingNames.has(entry.name)) return; // name collision with a manually-created set
+      sets.push({ id: `ms-import-${Date.now()}-${i}`, name: entry.name, songs: entry.songs });
+      added += 1;
+    });
+    persistSets();
+    saveImportedMsIds(importedIds);
+    msPendingImports = [];
+    renderSetsList();
+    showToast(`Imported ${added} set list${added === 1 ? "" : "s"} from MobileSheets`);
   }
 
   function makeSetCard(set) {
